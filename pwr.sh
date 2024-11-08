@@ -63,23 +63,23 @@ sudo ufw allow 22/tcp
 sudo ufw allow 8231/tcp
 sudo ufw allow 8085/tcp
 sudo ufw allow 7621/udp
+sudo iptables -A INPUT -p tcp --dport 8085 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 8231 -j ACCEPT
+sudo iptables -A INPUT -p udp --dport 7621 -j ACCEPT
+sudo ufw reload
 
 log "info" "Installing PWR Chain Validator Node..."
 sleep 5
 sudo apt update
 sudo apt install -y openjdk-19-jre-headless
 
-wget https://github.com/pwrlabs/PWR-Validator-Node/raw/main/validator.jar
-wget https://github.com/pwrlabs/PWR-Validator-Node/raw/main/config.json
+latest_version=$(curl -s https://api.github.com/repos/pwrlabs/PWR-Validator/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
+wget "https://github.com/pwrlabs/PWR-Validator/releases/download/$latest_version/validator.jar"
+wget https://github.com/pwrlabs/PWR-Validator/raw/refs/heads/main/config.json
 
 echo "$PASSWORD" | sudo tee password > /dev/null
 
-if [[ "$PRIVATEKEY" =~ ^[0-9a-fA-F]{64}$ ]]; then
-    echo "PrivateKey valid."
-    sudo java -jar validator.jar --import-key "$PRIVATEKEY" password
-else
-    echo "Invalid private key, mandatory character length is 64 characters, process continues with new wallet.."
-fi
+sudo java -jar validator.jar --import-key "$PRIVATEKEY" password
 
 sudo tee /etc/systemd/system/pwr.service > /dev/null <<EOF
 [Unit]
@@ -104,4 +104,4 @@ log "success" "PWR node setup complete and service started."
 
 rm -- "$0"
 
-sudo journalctl -u pwr -f
+sudo journalctl -uf pwr -o cat
