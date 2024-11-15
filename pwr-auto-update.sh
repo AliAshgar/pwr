@@ -143,8 +143,8 @@ check_upgrade() {
        sudo pkill -f java && \
        sudo systemctl restart pwr
        sleep 300
-       sudo systemctl stop pwr.service
-       sudo pkill -f java
+       sudo systemctl stop pwr.service &&\
+       sudo pkill -f java &&\
        sudo systemctl restart pwr; then
         
         log "SUCCESS" "Upgrade completed successfully"
