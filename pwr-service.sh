@@ -156,22 +156,25 @@ while true; do
             java -jar validator.jar --import-key $PRIVATE_KEY password $SERVER_IP --compression-level 0
 
             sudo tee /etc/systemd/system/pwr.service > /dev/null <<EOF
-[Unit]
-Description=PWR node
-After=network-online.target
-Wants=network-online.target
+            [Unit]
+            Description=PWR node
+            After=network-online.target
+            Wants=network-online.target
 
-[Service]
-User=$USER
-WorkingDirectory=$HOME
-ExecStart=java -jar validator.jar password $SERVER_IP --loop-udp-test &
-Restart=always
-RestartSec=5
-LimitNOFILE=65535
+            [Service]
+            User=$USER
+            WorkingDirectory=$HOME
+            ExecStart=java -jar validator.jar password $SERVER_IP --loop-udp-test
+            Restart=always
+            RestartSec=5
+            LimitNOFILE=65535
+            StandardOutput=journal
+            StandardError=journal
 
-[Install]
-WantedBy=multi-user.target
+            [Install]
+            WantedBy=multi-user.target
 EOF
+
 
             log "info" "Starting PWR service..."
             if ! sudo systemctl daemon-reload; then
